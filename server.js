@@ -5,11 +5,21 @@ const { buildRecommendationSet } = require("./engine");
 
 loadEnvFile(path.join(__dirname, ".env"));
 
+function readEnv(name, fallback = "") {
+  const rawValue = process.env[name];
+
+  if (typeof rawValue !== "string") {
+    return fallback;
+  }
+
+  return rawValue.trim().replace(/^['"]|['"]$/g, "");
+}
+
 const PORT = Number.parseInt(process.env.PORT || "3000", 10);
-const HOST = process.env.HOST || "0.0.0.0";
-const BIBLE_API_KEY = process.env.BIBLE_API_KEY || "";
-const BIBLE_ID = process.env.BIBLE_ID || "";
-const BIBLE_VERSION_LABEL = process.env.BIBLE_VERSION_LABEL || "NIV";
+const HOST = readEnv("HOST", "0.0.0.0");
+const BIBLE_API_KEY = readEnv("BIBLE_API_KEY");
+const BIBLE_ID = readEnv("BIBLE_ID");
+const BIBLE_VERSION_LABEL = readEnv("BIBLE_VERSION_LABEL", "NIV");
 
 const MIME_TYPES = {
   ".css": "text/css; charset=utf-8",
