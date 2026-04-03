@@ -136,7 +136,8 @@ async function fetchVerseText(reference) {
   });
 
   if (!response.ok) {
-    throw new Error(`Search failed with status ${response.status}`);
+    const errorText = await response.text();
+    throw new Error(`Search failed with status ${response.status}: ${errorText}`);
   }
 
   const payload = await response.json();
@@ -170,6 +171,7 @@ async function handleRecommendation(request, response) {
     }
 
     const insight = buildRecommendationSet(prompt);
+    const verseErrors = [];
     const verses = await Promise.all(
       insight.recommendations.map(async (item) => {
         try {
@@ -180,6 +182,7 @@ async function handleRecommendation(request, response) {
             sourceMode: liveVerse.sourceMode,
           };
         } catch (error) {
+          verseErrors.push(`${item.reference}: ${error.message}`);
           return {
             ...item,
             text: "",
@@ -197,22 +200,68 @@ async function handleRecommendation(request, response) {
       verses,
       bibleVersion: BIBLE_VERSION_LABEL,
       sourceConfigured: Boolean(BIBLE_API_KEY && BIBLE_ID),
+      warning:
+        verseErrors.length > 0
+          ? `Live Bible lookup failed for one or more verses. ${verseErrors[0]}`
+          : "",
     });
   } catch (error) {
-    sendJson(response, 500, { error: "Unable to build recommendation." });
+    sendJson(response, 500, { error: `Unable to build recommendation. ${error.message}` });
   }
 }
 
-function handleStatus(response) {
-  sendJson(response, 200, {
-    ok: true,
-    configured: Boolean(BIBLE_API_KEY && BIBLE_ID),
-    bibleVersion: BIBLE_VERSION_LABEL,
-    message:
-      BIBLE_API_KEY && BIBLE_ID
-        ? `${BIBLE_VERSION_LABEL} is configured on the server.`
-        : "Server is running in reference-only mode until BIBLE_API_KEY and BIBLE_ID are set.",
-  });
+async function handleStatus(response) {
+  const configured = Boolean(BIBLE_API_KEY && BIBLE_ID);
+
+  if (!configured) {
+    sendJson(response, 200, {
+      ok: true,
+      configured: false,
+      bibleVersion: BIBLE_VERSION_LABEL,
+      accessVerified: false,
+      message: "Server is running in reference-only mode until BIBLE_API_KEY and BIBLE_ID are set.",
+    });
+    return;
+  }
+
+  try {
+    const apiResponse = await fetch(`https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}`, {
+      headers: {
+        "api-key": BIBLE_API_KEY,
+      },
+    });
+
+    if (!apiResponse.ok) {
+      const errorText = await apiResponse.text();
+      sendJson(response, 200, {
+        ok: true,
+        configured: true,
+        bibleVersion: BIBLE_VERSION_LABEL,
+        accessVerified: false,
+        message: `Server has credentials, but Bible access failed with status ${apiResponse.status}. ${errorText}`,
+      });
+      return;
+    }
+
+    const payload = await apiResponse.json();
+    const bibleName = payload && payload.data && payload.data.name ? payload.data.name : BIBLE_VERSION_LABEL;
+
+    sendJson(response, 200, {
+      ok: true,
+      configured: true,
+      bibleVersion: BIBLE_VERSION_LABEL,
+      accessVerified: true,
+      message: `${BIBLE_VERSION_LABEL} is configured on the server and Bible access is verified for ${bibleName}.`,
+    });
+  } catch (error) {
+    sendJson(response, 200, {
+      ok: true,
+      configured: true,
+      bibleVersion: BIBLE_VERSION_LABEL,
+      accessVerified: false,
+      message: `Server has credentials, but could not verify Bible access. ${error.message}`,
+    });
+  }
 }
 
 function createServer() {

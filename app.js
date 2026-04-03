@@ -29,6 +29,7 @@
     activeRequest: null,
     installPrompt: null,
     serverConfigured: false,
+    accessVerified: false,
     bibleVersion: "NIV",
   };
 
@@ -85,6 +86,7 @@
 
       const payload = await response.json();
       state.serverConfigured = payload.configured;
+      state.accessVerified = Boolean(payload.accessVerified);
       state.bibleVersion = payload.bibleVersion || "NIV";
       elements.serverStatus.textContent = payload.message;
     } catch (error) {
@@ -125,6 +127,9 @@
 
       renderResults(payload);
       renderHistory();
+      if (payload.warning) {
+        elements.serverStatus.textContent = payload.warning;
+      }
     } catch (error) {
       const fallback = buildOfflineFallback(prompt);
       state.activeRequest = fallback;
