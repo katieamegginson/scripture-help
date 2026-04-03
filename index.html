@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scripture Help</title>
+    <meta
+      name="description"
+      content="Describe how you feel and get encouraging Bible verses you can save and revisit."
+    />
+    <meta name="theme-color" content="#9b5f2d" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <p class="eyebrow">Scripture Help</p>
+        <h1>Describe how you feel, and get encouragement from Scripture.</h1>
+        <p class="hero-copy">
+          This app helps you process emotions and questions through Bible
+          verses, keeps a log of past requests, and lets you save verses worth
+          revisiting.
+        </p>
+      </header>
+
+      <main class="layout">
+        <section class="panel panel-accent composer">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Lookup</p>
+              <h2>How are you feeling?</h2>
+            </div>
+            <button id="seedPromptButton" class="ghost-button" type="button">
+              Surprise me
+            </button>
+          </div>
+
+          <form id="lookupForm" class="lookup-form">
+            <label class="sr-only" for="promptInput">Describe how you feel</label>
+            <textarea
+              id="promptInput"
+              name="prompt"
+              rows="5"
+              placeholder="Try: I feel anxious about the future and I need reassurance that God is with me."
+            ></textarea>
+
+            <div class="prompt-suggestions" id="promptSuggestions"></div>
+
+            <div class="form-actions">
+              <button id="submitButton" class="primary-button" type="submit">
+                Find Scripture
+              </button>
+              <button id="clearButton" class="secondary-button" type="button">
+                Clear
+              </button>
+            </div>
+          </form>
+
+          <section class="settings-card">
+            <div class="settings-grid status-grid">
+              <div>
+                <p class="section-label">Bible Connection</p>
+                <p class="settings-help" id="serverStatus">
+                  Checking whether NIV is configured on the server...
+                </p>
+              </div>
+              <div>
+                <p class="section-label">Install</p>
+                <div class="settings-actions">
+                  <button id="installButton" class="secondary-button" type="button" hidden>
+                    Install app
+                  </button>
+                  <span class="settings-help" id="installHint">
+                    Open this in your phone browser and add it to your home screen.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="panel results-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Results</p>
+              <h2>Your encouragement</h2>
+            </div>
+            <span id="resultsMeta" class="meta-pill">No request yet</span>
+          </div>
+
+          <div id="emptyState" class="empty-state">
+            <h3>Start with whatever is on your heart.</h3>
+            <p>
+              You can name a feeling, ask a spiritual question, or describe a
+              situation in a sentence or two.
+            </p>
+          </div>
+
+          <div id="resultsContainer" class="results-list"></div>
+        </section>
+
+        <aside class="sidebar">
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-label">Saved</p>
+                <h2>Favorite verses</h2>
+              </div>
+              <span id="savedCount" class="meta-pill">0 saved</span>
+            </div>
+            <div id="savedContainer" class="stack-list empty-list"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-label">History</p>
+                <h2>Past requests</h2>
+              </div>
+              <span id="historyCount" class="meta-pill">0 items</span>
+            </div>
+            <div id="historyContainer" class="stack-list empty-list"></div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <template id="resultCardTemplate">
+      <article class="verse-card">
+        <div class="verse-card-top">
+          <div>
+            <p class="verse-reference"></p>
+            <p class="verse-theme"></p>
+          </div>
+          <button class="icon-button save-toggle" type="button"></button>
+        </div>
+        <p class="verse-text"></p>
+        <p class="verse-summary"></p>
+        <div class="verse-actions">
+          <button class="ghost-button copy-button" type="button">Copy</button>
+        </div>
+      </article>
+    </template>
+
+    <script src="./topics.js"></script>
+    <script src="./engine.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

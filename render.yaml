@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: scripture-help
+    runtime: node
+    plan: starter
+    autoDeploy: true
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    healthCheckPath: /api/status
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: BIBLE_VERSION_LABEL
+        value: NIV
+      - key: BIBLE_API_KEY
+        sync: false
+      - key: BIBLE_ID
+        sync: false

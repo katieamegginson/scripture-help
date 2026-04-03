@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-labelledby="title">
+  <title>Scripture Help icon</title>
+  <rect width="192" height="192" rx="42" fill="#f4efe5" />
+  <path d="M44 54c0-9.941 8.059-18 18-18h68c9.941 0 18 8.059 18 18v84c0 9.941-8.059 18-18 18H62c-9.941 0-18-8.059-18-18V54Z" fill="#9b5f2d"/>
+  <path d="M59 50h56c10.493 0 19 8.507 19 19v69H78c-10.493 0-19 8.507-19 19V50Z" fill="#355e53"/>
+  <path d="M79 78h34M79 96h34M79 114h23" stroke="#fdf8f1" stroke-linecap="round" stroke-width="8"/>
+  <path d="M52 70c9-7 18-10 27-10" stroke="#f4efe5" stroke-linecap="round" stroke-width="6"/>
+</svg>
