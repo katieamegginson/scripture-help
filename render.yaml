@@ -10,6 +10,8 @@ services:
     envVars:
       - key: HOST
         value: 0.0.0.0
+      - key: BIBLE_API_BASE_URL
+        value: https://rest.api.bible
       - key: BIBLE_VERSION_LABEL
         value: NIV
       - key: BIBLE_API_KEY

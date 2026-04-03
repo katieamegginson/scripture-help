@@ -69,6 +69,7 @@ This project is already prepared for that in [server.js](/Users/katiemegginson/D
 ## Environment variables
 
 - `PORT`: local server port, default `3000`
+- `BIBLE_API_BASE_URL`: defaults to `https://rest.api.bible`
 - `BIBLE_API_KEY`: your API.Bible key
 - `BIBLE_ID`: the NIV Bible ID exposed to your API key
 - `BIBLE_VERSION_LABEL`: defaults to `NIV`

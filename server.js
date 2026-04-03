@@ -20,6 +20,7 @@ const HOST = readEnv("HOST", "0.0.0.0");
 const BIBLE_API_KEY = readEnv("BIBLE_API_KEY");
 const BIBLE_ID = readEnv("BIBLE_ID");
 const BIBLE_VERSION_LABEL = readEnv("BIBLE_VERSION_LABEL", "NIV");
+const BIBLE_API_BASE_URL = readEnv("BIBLE_API_BASE_URL", "https://rest.api.bible");
 
 const MIME_TYPES = {
   ".css": "text/css; charset=utf-8",
@@ -138,7 +139,7 @@ async function fetchVerseText(reference) {
   }
 
   const query = encodeURIComponent(reference);
-  const url = `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/search?query=${query}&limit=1`;
+  const url = `${BIBLE_API_BASE_URL}/v1/bibles/${BIBLE_ID}/search?query=${query}&limit=1`;
   const response = await fetch(url, {
     headers: {
       "api-key": BIBLE_API_KEY,
@@ -235,7 +236,7 @@ async function handleStatus(response) {
   }
 
   try {
-    const apiResponse = await fetch(`https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}`, {
+    const apiResponse = await fetch(`${BIBLE_API_BASE_URL}/v1/bibles/${BIBLE_ID}`, {
       headers: {
         "api-key": BIBLE_API_KEY,
       },
