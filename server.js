@@ -22,6 +22,7 @@ const BIBLE_API_KEY = readEnv("BIBLE_API_KEY");
 const BIBLE_ID = readEnv("BIBLE_ID");
 const BIBLE_VERSION_LABEL = readEnv("BIBLE_VERSION_LABEL", "NIV");
 const BIBLE_API_BASE_URL = readEnv("BIBLE_API_BASE_URL", "https://rest.api.bible");
+let booksIndexPromise = null;
 
 const MIME_TYPES = {
   ".css": "text/css; charset=utf-8",
@@ -134,13 +135,92 @@ function stripHtml(html) {
   return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
+function normalizeBookName(value) {
+  return value.toLowerCase().replace(/[.\s]+/g, " ").trim();
+}
+
+function addBookAlias(index, key, bookId) {
+  if (!key) {
+    return;
+  }
+
+  index.set(normalizeBookName(key), bookId);
+}
+
+async function getBooksIndex() {
+  if (booksIndexPromise) {
+    return booksIndexPromise;
+  }
+
+  booksIndexPromise = (async () => {
+    const response = await fetch(`${BIBLE_API_BASE_URL}/v1/bibles/${BIBLE_ID}/books`, {
+      headers: {
+        "api-key": BIBLE_API_KEY,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Books lookup failed with status ${response.status}: ${errorText}`);
+    }
+
+    const payload = await response.json();
+    const books = Array.isArray(payload.data) ? payload.data : [];
+    const index = new Map();
+
+    books.forEach((book) => {
+      addBookAlias(index, book.id, book.id);
+      addBookAlias(index, book.abbreviation, book.id);
+      addBookAlias(index, book.name, book.id);
+      addBookAlias(index, book.nameLong, book.id);
+
+      if (book.nameLong === "Psalms") {
+        addBookAlias(index, "Psalm", book.id);
+      }
+    });
+
+    addBookAlias(index, "Song of Solomon", "SNG");
+    addBookAlias(index, "Song of Songs", "SNG");
+
+    return index;
+  })();
+
+  return booksIndexPromise;
+}
+
+async function referenceToVerseId(reference) {
+  const match = reference.match(/^(.+?)\s+(\d+):(\d+)(?:-(?:(\d+):)?(\d+))?$/);
+
+  if (!match) {
+    throw new Error(`Unsupported reference format: ${reference}`);
+  }
+
+  const [, bookName, chapter, startVerse, endChapter, endVerse] = match;
+  const booksIndex = await getBooksIndex();
+  const bookId = booksIndex.get(normalizeBookName(bookName));
+
+  if (!bookId) {
+    throw new Error(`Unknown book in reference: ${reference}`);
+  }
+
+  const startId = `${bookId}.${chapter}.${startVerse}`;
+
+  if (!endVerse) {
+    return startId;
+  }
+
+  const rangeChapter = endChapter || chapter;
+  const endId = `${bookId}.${rangeChapter}.${endVerse}`;
+  return `${startId}-${endId}`;
+}
+
 async function fetchVerseText(reference) {
   if (!BIBLE_API_KEY || !BIBLE_ID) {
     return { text: "", sourceMode: "reference-only" };
   }
 
-  const query = encodeURIComponent(reference);
-  const url = `${BIBLE_API_BASE_URL}/v1/bibles/${BIBLE_ID}/search?query=${query}&limit=1`;
+  const verseId = await referenceToVerseId(reference);
+  const url = `${BIBLE_API_BASE_URL}/v1/bibles/${BIBLE_ID}/verses/${verseId}?include-chapter-numbers=false&include-verse-numbers=false`;
   const response = await fetch(url, {
     headers: {
       "api-key": BIBLE_API_KEY,
@@ -155,9 +235,9 @@ async function fetchVerseText(reference) {
   const payload = await response.json();
   const data = payload && payload.data ? payload.data : {};
 
-  if (Array.isArray(data.passages) && data.passages[0] && data.passages[0].content) {
+  if (data.content) {
     return {
-      text: stripHtml(data.passages[0].content),
+      text: stripHtml(data.content),
       sourceMode: "niv-live",
     };
   }
