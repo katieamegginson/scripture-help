@@ -117,7 +117,16 @@
       });
 
       if (!response.ok) {
-        throw new Error("Recommendation request failed");
+        let details = "Recommendation request failed.";
+
+        try {
+          const errorPayload = await response.json();
+          details = errorPayload.error || details;
+        } catch (error) {
+          details = `Recommendation request failed with status ${response.status}.`;
+        }
+
+        throw new Error(details);
       }
 
       const payload = await response.json();
@@ -138,7 +147,7 @@
       renderResults(fallback);
       renderHistory();
       elements.serverStatus.textContent =
-        "Backend unavailable, so the app used local reference suggestions only.";
+        `Backend lookup failed, so the app used local reference suggestions only. ${error.message}`;
     } finally {
       setLoading(false);
     }

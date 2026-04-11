@@ -1,6 +1,7 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const { randomUUID } = require("crypto");
 const { buildRecommendationSet } = require("./engine");
 
 loadEnvFile(path.join(__dirname, ".env"));
@@ -204,7 +205,7 @@ async function handleRecommendation(request, response) {
     );
 
     sendJson(response, 200, {
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       prompt,
       createdAt: new Date().toISOString(),
       themes: insight.topics.map((topic) => topic.label),
